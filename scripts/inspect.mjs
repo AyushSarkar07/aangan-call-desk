@@ -1,0 +1,10 @@
+import postgres from "postgres";
+import fs from "node:fs";
+const env = Object.fromEntries(fs.readFileSync(".env.local", "utf8").split("\n").filter((l) => /^[A-Z_]+=/.test(l)).map((l) => { const i = l.indexOf("="); return [l.slice(0, i), l.slice(i + 1)]; }));
+const sql = postgres(env.DATABASE_URL, { max: 1, prepare: false });
+const ref = process.argv[2];
+const [r] = await sql`select l.extraction, l.criteria, l.reasons from calls c join leads l on l.call_id=c.id where c.vaani_call_id = ${"replay:" + ref}`;
+console.log(JSON.stringify(r, null, 1));
+const ev = await sql`select kind, detail->>'tokens' t from events e join calls c on c.id=e.call_id where c.vaani_call_id = ${"replay:" + ref} and kind='ai.extract'`;
+console.log(ev);
+await sql.end();
