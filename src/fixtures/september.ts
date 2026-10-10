@@ -1,6 +1,6 @@
 // The 20 anonymised phone enquiries from Aangan_Sep 2026_Enquiries (Section 1), replayed through the
 // pipeline as if the AI agent had taken them. `expected` is the outcome Nikhil's rubric gives
-// (qualified.md), used by the calibration page to measure the system's accuracy.
+// (qualified.md), kept as the reference set for checking the system's judgement.
 import type { LeadStatus, Turn } from "@/lib/types";
 
 export interface Fixture {

@@ -4,10 +4,7 @@ import { usePathname } from "next/navigation";
 
 const LINKS = [
   { href: "/", label: "Dashboard" },
-  { href: "/calls", label: "Calls" },
-  { href: "/simulate", label: "Test a call" },
-  { href: "/calibration", label: "Accuracy" },
-  { href: "/system", label: "How it works" },
+  { href: "/calls", label: "Call log" },
 ];
 
 export function Nav() {

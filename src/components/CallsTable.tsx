@@ -25,14 +25,14 @@ export function CallsTable({ rows, compact = false }: { rows: CallRow[]; compact
             return (
               <tr key={call.id} className="border-b border-line last:border-0 hover:bg-page">
                 <td className="whitespace-nowrap px-4 py-2.5 align-top sm:pl-0">
-                  <Link href={`/calls/${call.id}`} className="text-ink hover:text-accent">{ist(call.start_time)}</Link>
+                  <Link href={`/calls?id=${call.id}`} className="text-ink hover:text-accent">{ist(call.start_time)}</Link>
                   <div className="mt-0.5 flex gap-1">
                     {ref && <Pill>{ref}</Pill>}
                     {call.after_hours && <Pill tone="info">After hours</Pill>}
                   </div>
                 </td>
                 <td className="py-2.5 pr-3 align-top">
-                  <Link href={`/calls/${call.id}`} className="font-medium hover:text-accent">{lead?.caller_name ?? "Unknown caller"}</Link>
+                  <Link href={`/calls?id=${call.id}`} className="font-medium hover:text-accent">{lead?.caller_name ?? "Unknown caller"}</Link>
                   <div className="text-[12px] text-muted">{call.caller_phone ?? "Number withheld"}</div>
                 </td>
                 <td className="max-w-[240px] py-2.5 pr-3 align-top text-ink-2">

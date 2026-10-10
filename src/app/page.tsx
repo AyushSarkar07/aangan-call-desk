@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Bars, DailyOutcomes } from "@/components/charts";
 import { CallsTable } from "@/components/CallsTable";
 import { PeriodTabs } from "@/components/PeriodTabs";
-import { ReplayButton } from "@/components/ReplayButton";
 import { Card, Pill, Stat } from "@/components/ui";
 import { getRates } from "@/lib/config";
 import { inr, inrCompact, pct, secs } from "@/lib/format";
@@ -21,13 +20,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
     return (
       <div className="mx-auto max-w-xl py-16 text-center">
         <h1 className="font-serif text-[30px] leading-tight">Every enquiry answered, day or night.</h1>
-        <p className="mt-3 text-[14px] text-ink-2">
-          No calls yet. Replay September&apos;s 20 phone enquiries through the system to see what it would have done, or place a test call.
-        </p>
-        <div className="mt-6 flex justify-center gap-3">
-          <ReplayButton />
-          <Link href="/simulate" className="rounded-md border border-line-strong px-3 py-2 text-[13px]">Test a call</Link>
-        </div>
+        <p className="mt-3 text-[14px] text-ink-2">No calls yet. Calls appear here as soon as the AI front desk answers them.</p>
       </div>
     );
   }
@@ -115,7 +108,7 @@ export default async function Dashboard({ searchParams }: PageProps<"/">) {
         </Card>
       )}
 
-      <Card title="Recent calls" right={<Link href="/calls" className="text-[12.5px] text-accent">All calls →</Link>}>
+      <Card title="Recent calls" right={<Link href="/calls" className="text-[12.5px] text-accent">Call log →</Link>}>
         <CallsTable rows={rows.slice(0, 10)} />
       </Card>
 
