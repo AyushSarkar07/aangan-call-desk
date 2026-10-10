@@ -26,12 +26,12 @@ export type AppConfig = ReturnType<typeof getConfig>;
 
 /**
  * Unit costs, all overridable from the environment. INR throughout.
- * Vaani (vaanivoice.ai) does not publish a per-minute price; ₹2.40/min is a placeholder,
+ * Vaani (vaanivoice.ai) shows ₹5.60/min (estimated) on the agent page for this setup,
  * billed per started minute. Set VAANI_INR_PER_MIN to the real rate from the dashboard.
  */
 export function getRates() {
   return {
-    vaaniInrPerMin: num("VAANI_INR_PER_MIN", 2.4),
+    vaaniInrPerMin: num("VAANI_INR_PER_MIN", 5.6),
     geminiUsdPerMInput: num("GEMINI_USD_PER_M_INPUT", 0.3),
     geminiUsdPerMOutput: num("GEMINI_USD_PER_M_OUTPUT", 2.5),
     usdInr: num("USD_INR", 88),

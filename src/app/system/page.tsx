@@ -151,7 +151,7 @@ export default function SystemPage() {
 
         <Card title="Unit economics">
           <ul className="space-y-1 text-[13px] text-ink-2">
-            <li>Vaani voice: {inr(r.vaaniInrPerMin, 2)} per started minute: a placeholder until Vaani shares its rate (VAANI_INR_PER_MIN).</li>
+            <li>Vaani voice: {inr(r.vaaniInrPerMin, 2)} per started minute, as estimated on the Vaani agent page (VAANI_INR_PER_MIN).</li>
             <li>Gemini Flash: ${r.geminiUsdPerMInput} / ${r.geminiUsdPerMOutput} per million input / output tokens.</li>
             <li>Telegram, Cal.com (free plan), HubSpot (free CRM), Supabase (free), Vercel (Hobby): ₹0.</li>
             <li>A typical 5-minute call costs about {inr(5 * r.vaaniInrPerMin + 0.2, 0)}. 200 calls a month is about {inr(200 * (5 * r.vaaniInrPerMin + 0.2))}.</li>
