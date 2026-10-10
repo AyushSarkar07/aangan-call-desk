@@ -4,6 +4,14 @@ Platform: **Vaani (vaanivoice.ai)**. Dashboard at https://app.vaanivoice.ai, doc
 The agent is a prompt + voice. It has the conversation; when the call ends, Vaani posts `call_postprocessing`
 (transcript, summary, duration) to our webhook, and our pipeline runs the rubric, booking, CRM and Telegram handoff.
 
+## Current setup (2026-10-10)
+
+- Agent `aangan-front-desk`, id `a115fd10-890a-46d0-970e-b42d9e6d0d65`, created through `POST /api/create-agent`
+  with the prompt below; STT Deepgram nova-3 with Pune locality keywords, LLM Gemini 3.5 Flash, TTS Cartesia "devansh".
+- Webhook "Aangan Call Desk" → this app, events: call_started, call_failed, call_ended, call_postprocessing.
+- Phone number: not bought yet (Vobiz: ₹100 setup + ₹500/month, Karnataka). Test with the in-browser call.
+- Real payloads nest every field under `data` (seen in Vaani's Test Connectivity), unlike some doc examples.
+
 ## 1. Create the agent (Agent Config → Create Agent)
 
 - **Name:** `aangan-front-desk`
