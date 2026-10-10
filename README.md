@@ -9,12 +9,13 @@ The dashboard shows volume, speed, qualification, cost and expected return, comp
 
 | | Where |
 |---|---|
-| A. Components map (Trigger → Input → Context → Processing → AI → Output) | `/system` page, `src/app/system/page.tsx` |
+| A. Components map (Trigger → Input → Context → Processing → AI → Output) | `docs/components-map.png` / `.pdf` |
 | B. Schema + migration (`calls`, `leads`, `system_costs`, `events`) | `supabase/migrations/0001_init.sql` |
 | C. Handoff note generator | `src/lib/handoff.ts` (`buildHandoff`, `toMarkdown`, `toTelegramHtml`) |
 | Qualification rubric (qualified.md in code) | `src/lib/rubric.ts`, tests in `tests/rubric.test.ts` |
 | Voice agent script + flow | `docs/VAANI_AGENT.md` |
-| Accuracy against September's 20 calls | `/calibration` page, `src/fixtures/september.ts` |
+| September's 20 phone enquiries, with the rubric's expected outcome (replay matched 21/21) | `src/fixtures/september.ts` |
+| Call log: every call's conversation, outcome, meeting, handoff and CRM deal | `/calls` page, `src/components/CallDetail.tsx` |
 
 ## How a call flows
 
@@ -36,4 +37,4 @@ npm run dev
 npm test
 ```
 
-Then open the dashboard and press **Replay September's calls**, or use **Test a call**.
+Then open the dashboard and the Call log. Live: https://aangan-call-desk.vercel.app
