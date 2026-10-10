@@ -3,13 +3,13 @@ import { getConfig } from "@/lib/config";
 import { processCall } from "@/lib/pipeline";
 import { getStore } from "@/lib/store";
 import { isAfterHours } from "@/lib/transcript";
-import { normalisePostprocessing, roomOf, tokenMatches, type VaaniEvent } from "@/lib/vaani";
+import { normalisePostprocessing, phoneOf, roomOf, tokenMatches, type VaaniEvent } from "@/lib/vaani";
 
 export const maxDuration = 60;
 
 // Trigger: Vaani (vaanivoice.ai) posts call lifecycle events here. call_started carries the caller's
 // number; call_postprocessing carries the transcript, so that is when the workflow runs.
-// Vaani does not sign webhooks, so the registered URL includes ?token=<VAANI_WEBHOOK_SECRET>.
+// The registered URL includes ?token=<VAANI_WEBHOOK_SECRET> (Vaani signing is optional and undocumented).
 export async function POST(req: Request) {
   const secret = getConfig().vaaniSecret;
   if (!secret) return NextResponse.json({ error: "Webhook secret not configured" }, { status: 503 });
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       call_id: null,
       kind: `vaani.${type}`,
       ok: !/failed|rejected/.test(type),
-      detail: { room_name: room, phone_number: e.phone_number ?? null, payload: e },
+      detail: { room_name: room, phone_number: phoneOf(e), payload: e },
     });
     return NextResponse.json({ ok: true, stored: type });
   }

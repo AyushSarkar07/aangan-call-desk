@@ -48,18 +48,28 @@ export interface NormalisedCall {
 
 export const roomOf = (e: VaaniEvent) => e.data?.room_name ?? e.room_name ?? e.data?.call_id ?? e.call_id ?? null;
 
-/** call_postprocessing → our call shape. Duration arrives in milliseconds; the timestamp is when processing finished. */
+/** Real payloads nest every event's fields under `data` (the docs show some flat); read both. */
+export const phoneOf = (e: VaaniEvent) => {
+  const p = e.data?.phone_number ?? e.phone_number ?? e.data?.from_number ?? e.data?.caller_number ?? null;
+  return p ? p.replace(/[^\d+]/g, "") || null : null;
+};
+
+/**
+ * call_postprocessing → our call shape. The timestamp is when processing finished.
+ * call_duration is documented in milliseconds but Vaani's own test event sends seconds (120),
+ * so anything over two hours is read as milliseconds.
+ */
 export function normalisePostprocessing(e: VaaniEvent): NormalisedCall {
   const d = e.data ?? {};
   const room = roomOf(e) ?? "unknown";
-  const ms = Number(d.call_duration ?? 0);
-  const durationSec = Number.isFinite(ms) && ms > 0 ? Math.round(ms / 1000) : 0;
+  const raw = Number(d.call_duration ?? 0);
+  const durationSec = Number.isFinite(raw) && raw > 0 ? Math.round(raw > 7200 ? raw / 1000 : raw) : 0;
   const finished = e.timestamp && !Number.isNaN(Date.parse(e.timestamp)) ? new Date(e.timestamp) : new Date();
-  const phone = d.phone_number ?? d.from_number ?? d.caller_number ?? null;
+  const phone = phoneOf(e);
   return {
     callId: d.call_id ?? e.call_id ?? room,
     room,
-    phone: phone ? phone.replace(/[^\d+]/g, "") || null : null,
+    phone,
     start: new Date(finished.getTime() - durationSec * 1000),
     durationSec,
     turns: parseTranscript(d.transcript),

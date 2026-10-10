@@ -164,7 +164,7 @@ export class PostgresStore implements Store {
   }
   async phoneForRoom(room: string) {
     const [r] = await sql()`select detail->>'phone_number' as phone from events
-      where kind = 'vaani.call_started' and detail->>'room_name' = ${room} and detail ? 'phone_number' order by id desc limit 1`;
+      where kind = 'vaani.call_started' and detail->>'room_name' = ${room} and detail->>'phone_number' is not null order by id desc limit 1`;
     return (r?.phone as string) ?? null;
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalisePostprocessing, roomOf, tokenMatches } from "@/lib/vaani";
+import { normalisePostprocessing, phoneOf, roomOf, tokenMatches } from "@/lib/vaani";
 
 // Verbatim shape from https://docs.vaanivoice.ai/guides/webhook-setup (call_postprocessing).
 const sample = {
@@ -32,6 +32,15 @@ describe("vaani webhook", () => {
     expect(n.start.toISOString()).toBe("2026-07-24T13:33:27.278Z");
     expect(n.callId).toBe("outbound-1784899978-36cec598");
     expect(n.phone).toBeNull();
+  });
+  it("reads Vaani's real nested shape (from its Test Connectivity event)", () => {
+    const started = { event: "call_started", timestamp: "2026-10-10T05:32:36Z", data: { call_id: "r1", room_name: "r1", call_type: "Inbound", phone_number: "+91 98765 43210" } };
+    expect(roomOf(started)).toBe("r1");
+    expect(phoneOf(started)).toBe("+919876543210");
+    const pp = { event: "call_postprocessing", call_id: "r1", timestamp: "2026-10-10T05:32:36Z", data: { call_id: "r1", room_name: "r1", call_duration: 120, transcript: "Agent: Hello\nUser: Hi" } };
+    const n = normalisePostprocessing(pp);
+    expect(n.durationSec).toBe(120);
+    expect(n.turns).toEqual([{ speaker: "agent", text: "Hello" }, { speaker: "caller", text: "Hi" }]);
   });
   it("finds the room on flat and nested events", () => {
     expect(roomOf({ event: "call_started", room_name: "room_1", phone_number: "+91" })).toBe("room_1");
