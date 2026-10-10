@@ -1,6 +1,6 @@
 # Aangan Call Desk
 
-AI front desk for Aangan Studio (MESA Case 03). Every inbound call is answered by a Vaani Labs voice agent, day or night.
+AI front desk for Aangan Studio (MESA Case 03). Every inbound call is answered by a Vaani (vaanivoice.ai) voice agent, day or night.
 When the call ends, Gemini Flash reads the transcript into facts, Nikhil's rubric decides in code, and qualified callers
 get a consultation (Cal.com), a CRM deal (HubSpot) and a designer handoff on Telegram, with everything already asked.
 The dashboard shows volume, speed, qualification, cost and expected return, computed from every call.
@@ -18,7 +18,7 @@ The dashboard shows volume, speed, qualification, cost and expected return, comp
 
 ## How a call flows
 
-1. Vaani posts `call.completed` to `/api/vaani/webhook` (HMAC-verified, idempotent on event id); we reply at once and continue with `after()`.
+1. Vaani posts `call_started` (caller number) and `call_postprocessing` (transcript) to `/api/vaani/webhook?token=…`; idempotent on the call id; we reply at once and continue with `after()`.
 2. `extract()` (Gemini) turns the transcript into a strict JSON `Extraction`: facts and caller quotes, no decision.
 3. `decide()` applies the five criteria. Any fail → decline. Unclear scope/area/timeline → call-back with one question.
    Unclear budget/decision-maker → qualified with a note. Existing client → escalate.

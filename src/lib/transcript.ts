@@ -22,7 +22,8 @@ export function parseTranscript(input: unknown): Turn[] {
   if (typeof input !== "string") return [];
   const turns: Turn[] = [];
   for (const raw of input.split(/\r?\n/)) {
-    const line = raw.trim();
+    // Vaani prefixes each turn with a timestamp: "[13:33:14] AGENT: ..."
+    const line = raw.trim().replace(/^\[\d{1,2}:\d{2}(?::\d{2})?\]\s*/, "");
     if (!line) continue;
     const m = line.match(/^\*{0,2}([A-Za-z ]{2,20})\*{0,2}\s*:\s*(.*)$/);
     const sp = m ? speakerOf(m[1]) : null;

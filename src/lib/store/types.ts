@@ -23,4 +23,6 @@ export interface Store {
   listCalls(opts?: { from?: Date; to?: Date; source?: CallRecord["source"] }): Promise<CallRow[]>;
   recentCallsFrom(phone: string, since: Date): Promise<CallRecord[]>;
   deleteBySource(source: CallRecord["source"]): Promise<number>;
+  /** Caller number from the vaani.call_started event for this room (the transcript event omits it). */
+  phoneForRoom(room: string): Promise<string | null>;
 }

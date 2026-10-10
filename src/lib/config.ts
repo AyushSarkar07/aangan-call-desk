@@ -26,8 +26,8 @@ export type AppConfig = ReturnType<typeof getConfig>;
 
 /**
  * Unit costs, all overridable from the environment. INR throughout.
- * Vaani: 4 paise/sec (₹2.40/min) is the published voicebot wallet rate, billed per started minute;
- * phone-line minutes may differ, so set VAANI_INR_PER_MIN once the real rate is known.
+ * Vaani (vaanivoice.ai) does not publish a per-minute price; ₹2.40/min is a placeholder,
+ * billed per started minute. Set VAANI_INR_PER_MIN to the real rate from the dashboard.
  */
 export function getRates() {
   return {

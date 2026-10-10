@@ -1,84 +1,69 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { parseTranscript } from "./transcript";
 import type { Turn } from "./types";
 
-/** X-VaaniVoice-Signature: "sha256=<hex>" = HMAC-SHA256(raw body, vv_whk_ secret). */
-export function verifySignature(raw: string, header: string | null, secret: string): boolean {
-  if (!header) return false;
-  const expected = Buffer.from(`sha256=${createHmac("sha256", secret).update(raw).digest("hex")}`);
-  const given = Buffer.from(header.trim());
-  return expected.length === given.length && timingSafeEqual(expected, given);
+// Vaani (vaanivoice.ai) webhooks: https://docs.vaanivoice.ai/guides/webhook-setup
+// Vaani does not sign webhooks, so the URL carries a secret: /api/vaani/webhook?token=<VAANI_WEBHOOK_SECRET>.
+export function tokenMatches(given: string | null, secret: string): boolean {
+  if (!given) return false;
+  const a = createHash("sha256").update(given).digest();
+  const b = createHash("sha256").update(secret).digest();
+  return timingSafeEqual(a, b);
 }
 
-export interface VaaniEnvelope {
-  id?: string;
-  type?: string;
-  created?: number;
-  data?: unknown;
+/** Flat lifecycle events (call_started, call_ended, ...) and the nested call_postprocessing event. */
+export interface VaaniEvent {
+  event?: string;
+  call_id?: string;
+  room_name?: string;
+  timestamp?: string;
+  phone_number?: string;
+  call_duration?: number;
+  data?: {
+    room_name?: string;
+    call_id?: string;
+    call_duration?: number; // milliseconds in call_postprocessing
+    end_reason?: string;
+    summary?: string;
+    entities?: Record<string, unknown>;
+    dispositions?: Record<string, unknown>;
+    recording_url?: string;
+    transcript?: unknown;
+    phone_number?: string;
+    from_number?: string;
+    caller_number?: string;
+  };
 }
 
 export interface NormalisedCall {
-  eventId: string | null;
-  callId: string | null;
+  callId: string;
+  room: string;
   phone: string | null;
   start: Date;
   durationSec: number;
   turns: Turn[];
-  missing: string[];
+  summary: string | null;
+  recordingUrl: string | null;
 }
 
-// Vaani documents the envelope but not the fields inside `data` ("no sub-field is guaranteed"),
-// so look for each value under the names voice platforms commonly use, anywhere in the object.
-const KEYS = {
-  transcript: ["transcript", "transcription", "messages", "conversation", "turns", "dialogue", "chat_history", "history"],
-  phone: ["caller_number", "from_number", "customer_number", "phone_number", "caller", "from", "phone", "mobile", "number"],
-  duration: ["duration_sec", "duration_seconds", "call_duration", "duration", "billable_seconds", "seconds"],
-  callId: ["call_id", "callId", "session_id", "sessionId", "conversation_id", "call_sid", "id"],
-  start: ["started_at", "start_time", "startTime", "created_at", "createdAt", "timestamp"],
-};
+export const roomOf = (e: VaaniEvent) => e.data?.room_name ?? e.room_name ?? e.data?.call_id ?? e.call_id ?? null;
 
-function find(obj: unknown, names: string[], depth = 0): unknown {
-  if (!obj || typeof obj !== "object" || depth > 4) return undefined;
-  const o = obj as Record<string, unknown>;
-  for (const n of names) if (o[n] != null && o[n] !== "") return o[n];
-  for (const v of Object.values(o)) {
-    if (v && typeof v === "object" && !Array.isArray(v)) {
-      const hit = find(v, names, depth + 1);
-      if (hit !== undefined) return hit;
-    }
-  }
-  return undefined;
-}
-
-function toDate(v: unknown, fallback: Date): Date {
-  if (typeof v === "number") return new Date(v < 1e12 ? v * 1000 : v);
-  if (typeof v === "string" && !Number.isNaN(Date.parse(v))) return new Date(v);
-  return fallback;
-}
-
-export function normalise(env: VaaniEnvelope): NormalisedCall {
-  const data = env.data ?? {};
-  const missing: string[] = [];
-  const rawTranscript = find(data, KEYS.transcript);
-  const turns = parseTranscript(rawTranscript);
-  if (!turns.length) missing.push("transcript");
-  const phoneRaw = find(data, KEYS.phone);
-  const phone = typeof phoneRaw === "string" || typeof phoneRaw === "number" ? String(phoneRaw).replace(/[^\d+*xX]/g, "") || null : null;
-  if (!phone) missing.push("caller_phone");
-  let durationSec = Number(find(data, KEYS.duration) ?? 0);
-  if (!Number.isFinite(durationSec) || durationSec < 0) durationSec = 0;
-  if (durationSec > 10_000) durationSec = Math.round(durationSec / 1000); // milliseconds
-  if (!durationSec) missing.push("duration");
-  const created = env.created ? new Date(env.created * 1000) : new Date();
-  const start = toDate(find(data, KEYS.start), new Date(created.getTime() - durationSec * 1000));
-  const callId = find(data, KEYS.callId);
+/** call_postprocessing → our call shape. Duration arrives in milliseconds; the timestamp is when processing finished. */
+export function normalisePostprocessing(e: VaaniEvent): NormalisedCall {
+  const d = e.data ?? {};
+  const room = roomOf(e) ?? "unknown";
+  const ms = Number(d.call_duration ?? 0);
+  const durationSec = Number.isFinite(ms) && ms > 0 ? Math.round(ms / 1000) : 0;
+  const finished = e.timestamp && !Number.isNaN(Date.parse(e.timestamp)) ? new Date(e.timestamp) : new Date();
+  const phone = d.phone_number ?? d.from_number ?? d.caller_number ?? null;
   return {
-    eventId: env.id ?? null,
-    callId: callId != null ? String(callId) : null,
-    phone,
-    start,
-    durationSec: Math.round(durationSec),
-    turns,
-    missing,
+    callId: d.call_id ?? e.call_id ?? room,
+    room,
+    phone: phone ? phone.replace(/[^\d+]/g, "") || null : null,
+    start: new Date(finished.getTime() - durationSec * 1000),
+    durationSec,
+    turns: parseTranscript(d.transcript),
+    summary: d.summary ?? null,
+    recordingUrl: d.recording_url ?? null,
   };
 }

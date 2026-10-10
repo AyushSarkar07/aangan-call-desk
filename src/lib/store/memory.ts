@@ -81,4 +81,8 @@ export class MemoryStore implements Store {
     db.events = db.events.filter((e) => !e.call_id || !ids.has(e.call_id));
     return ids.size;
   }
+  async phoneForRoom(room: string) {
+    const e = db.events.find((x) => x.kind === "vaani.call_started" && x.detail.room_name === room && x.detail.phone_number);
+    return e ? String(e.detail.phone_number) : null;
+  }
 }

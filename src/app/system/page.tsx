@@ -15,15 +15,15 @@ export default function SystemPage() {
     {
       key: "trigger", title: "Trigger", question: "What starts it?",
       items: [
-        { name: "Inbound call, any hour", tool: "Vaani Labs", detail: "AI agent picks up within seconds, 24/7. No more 10am–7pm only.", live: Boolean(c.vaaniSecret) },
-        { name: "Call ends → webhook", tool: "call.completed / call.failed", detail: "Signed (HMAC-SHA256), de-duplicated on the event id, answered inside Vaani's 10 s timeout." },
+        { name: "Inbound call, any hour", tool: "Vaani (vaanivoice.ai)", detail: "AI agent on a provisioned number picks up within seconds, 24/7. No more 10am–7pm only.", live: Boolean(c.vaaniSecret) },
+        { name: "Call ends → webhook", tool: "call_started + call_postprocessing", detail: "Secret token in the URL (Vaani doesn't sign webhooks), de-duplicated on the call id, answered at once; the AI work runs after the response." },
       ],
     },
     {
       key: "input", title: "Input", question: "What data comes in?",
       items: [
-        { name: "Transcript", tool: "Vaani payload", detail: "Agent / caller turns. Parsed defensively: Vaani doesn't publish the field names." },
-        { name: "Call metadata", tool: "Vaani payload", detail: "Caller number, start time, duration. After-hours computed in IST." },
+        { name: "Transcript", tool: "Vaani payload", detail: "Timestamped AGENT / USER turns from call_postprocessing, plus Vaani's own summary." },
+        { name: "Call metadata", tool: "Vaani payload", detail: "Caller number (from call_started, matched by room), duration (ms), start time. After-hours computed in IST." },
       ],
     },
     {
@@ -46,7 +46,7 @@ export default function SystemPage() {
     {
       key: "ai", title: "AI", question: "Where is judgment needed?",
       items: [
-        { name: "Voice conversation", tool: "Vaani agent (flow + prompt)", detail: "Greets, asks the 5 questions naturally, deflects pricing with the script, Hinglish/Marathi aware." },
+        { name: "Voice conversation", tool: "Vaani agent (prompt + voice)", detail: "Greets, asks the 5 questions naturally, deflects pricing with the script, Hinglish/Marathi aware." },
         { name: "Fact extraction", tool: `Gemini Flash (${c.ai === "gemini" ? c.geminiModel : "not configured"})`, detail: "Transcript → strict JSON: scope, locality, dates, volunteered budget, decision-maker, quotes as evidence. Facts only; it does not decide.", live: c.ai === "gemini" },
       ],
     },
@@ -151,7 +151,7 @@ export default function SystemPage() {
 
         <Card title="Unit economics">
           <ul className="space-y-1 text-[13px] text-ink-2">
-            <li>Vaani voice: {inr(r.vaaniInrPerMin, 2)} per started minute (set VAANI_INR_PER_MIN).</li>
+            <li>Vaani voice: {inr(r.vaaniInrPerMin, 2)} per started minute: a placeholder until Vaani shares its rate (VAANI_INR_PER_MIN).</li>
             <li>Gemini Flash: ${r.geminiUsdPerMInput} / ${r.geminiUsdPerMOutput} per million input / output tokens.</li>
             <li>Telegram, Cal.com (free plan), HubSpot (free CRM), Supabase (free), Vercel (Hobby): ₹0.</li>
             <li>A typical 5-minute call costs about {inr(5 * r.vaaniInrPerMin + 0.2, 0)}. 200 calls a month is about {inr(200 * (5 * r.vaaniInrPerMin + 0.2))}.</li>
@@ -168,7 +168,7 @@ export default function SystemPage() {
 
       <Card title="Endpoints">
         <ul className="space-y-1 font-mono text-[12.5px]">
-          <li>POST {c.appUrl}/api/vaani/webhook <Pill>Vaani: call.completed, call.failed</Pill></li>
+          <li>POST {c.appUrl}/api/vaani/webhook <Pill>Vaani: call_started, call_postprocessing (?token=…)</Pill></li>
           <li>POST {c.appUrl}/api/telegram/webhook <Pill>Telegram: designer claims a lead</Pill></li>
           <li>POST {c.appUrl}/api/simulate <Pill>Test a call</Pill></li>
           <li>POST {c.appUrl}/api/replay <Pill>Replay September</Pill></li>

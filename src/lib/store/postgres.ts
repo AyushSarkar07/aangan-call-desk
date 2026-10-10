@@ -162,4 +162,9 @@ export class PostgresStore implements Store {
     const rows = await sql()`delete from calls where source = ${source} returning id`;
     return rows.length;
   }
+  async phoneForRoom(room: string) {
+    const [r] = await sql()`select detail->>'phone_number' as phone from events
+      where kind = 'vaani.call_started' and detail->>'room_name' = ${room} and detail ? 'phone_number' order by id desc limit 1`;
+    return (r?.phone as string) ?? null;
+  }
 }

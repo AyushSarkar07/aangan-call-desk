@@ -3,48 +3,57 @@ import { getConfig } from "@/lib/config";
 import { processCall } from "@/lib/pipeline";
 import { getStore } from "@/lib/store";
 import { isAfterHours } from "@/lib/transcript";
-import { normalise, verifySignature, type VaaniEnvelope } from "@/lib/vaani";
+import { normalisePostprocessing, roomOf, tokenMatches, type VaaniEvent } from "@/lib/vaani";
 
 export const maxDuration = 60;
 
-// Trigger: Vaani posts here when a call ends. Signature-checked, idempotent on the event id,
-// and answers within Vaani's 10-second timeout by doing the AI work after the response.
+// Trigger: Vaani (vaanivoice.ai) posts call lifecycle events here. call_started carries the caller's
+// number; call_postprocessing carries the transcript, so that is when the workflow runs.
+// Vaani does not sign webhooks, so the registered URL includes ?token=<VAANI_WEBHOOK_SECRET>.
 export async function POST(req: Request) {
   const secret = getConfig().vaaniSecret;
   if (!secret) return NextResponse.json({ error: "Webhook secret not configured" }, { status: 503 });
-  const raw = await req.text();
-  if (!verifySignature(raw, req.headers.get("x-vaanivoice-signature"), secret)) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  const url = new URL(req.url);
+  if (!tokenMatches(url.searchParams.get("token") ?? req.headers.get("x-webhook-token"), secret)) {
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
-  let env: VaaniEnvelope;
+  let e: VaaniEvent;
   try {
-    env = JSON.parse(raw);
+    e = await req.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  const type = env.type ?? req.headers.get("x-vaanivoice-event") ?? "unknown";
   const store = getStore();
+  const type = e.event ?? "unknown";
+  const room = roomOf(e);
 
-  if (type !== "call.completed" && type !== "call.failed") {
-    // Keep pings, lead.created, usage.charged etc. so the real payload shapes can be inspected.
-    await store.addEvent({ call_id: null, kind: `vaani.${type}`, ok: true, detail: { payload: raw.slice(0, 20_000) } });
-    return NextResponse.json({ ok: true, ignored: type });
+  if (type !== "call_postprocessing") {
+    // Keep every lifecycle event: call_started gives us the caller's number, the rest are an audit trail.
+    await store.addEvent({
+      call_id: null,
+      kind: `vaani.${type}`,
+      ok: !/failed|rejected/.test(type),
+      detail: { room_name: room, phone_number: e.phone_number ?? null, payload: e },
+    });
+    return NextResponse.json({ ok: true, stored: type });
   }
 
-  const n = normalise(env);
+  const n = normalisePostprocessing(e);
+  const phone = n.phone ?? (await store.phoneForRoom(n.room));
   const call = await store.insertCall({
     source: "vaani",
-    vaani_event_id: n.eventId ?? req.headers.get("x-vaanivoice-delivery"),
+    vaani_event_id: `postprocessing:${n.callId}`,
     vaani_call_id: n.callId,
-    caller_phone: n.phone,
+    caller_phone: phone,
     start_time: n.start.toISOString(),
     duration_sec: n.durationSec,
     after_hours: isAfterHours(n.start),
-    transcript: type === "call.failed" ? [] : n.turns,
-    raw_payload: env,
+    transcript: n.turns,
+    raw_payload: e,
   });
   if (!call) return NextResponse.json({ ok: true, duplicate: true });
-  if (n.missing.length) await store.addEvent({ call_id: call.id, kind: "vaani.payload", ok: n.missing.length < 2, detail: { missing: n.missing } });
+  const missing = [!n.turns.length && "transcript", !phone && "caller_phone", !n.durationSec && "duration"].filter(Boolean);
+  if (missing.length) await store.addEvent({ call_id: call.id, kind: "vaani.payload", ok: missing.length < 2, detail: { missing } });
 
   after(() => processCall(call.id, { notify: true }));
   return NextResponse.json({ ok: true, call_id: call.id });
