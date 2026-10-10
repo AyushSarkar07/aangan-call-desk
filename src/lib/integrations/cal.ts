@@ -79,7 +79,7 @@ export async function bookConsultation(opts: { name: string; phone: string | nul
   const booked = await cal<{ uid: string; start: string }>("/bookings", "2024-08-13", {
     method: "POST",
     body: JSON.stringify({
-      start: slot,
+      start: new Date(slot).toISOString(),
       eventTypeId,
       attendee: {
         name: opts.name,
