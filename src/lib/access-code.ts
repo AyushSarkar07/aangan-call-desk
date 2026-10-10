@@ -5,6 +5,9 @@ import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 export const SESSION_COOKIE = "aangan_session";
 export const SESSION_DAYS = 30;
 
+/** OPEN_ACCESS=true removes sign-in entirely: anyone with the link can view and use the dashboard. */
+export const openAccess = () => process.env.OPEN_ACCESS?.trim() === "true";
+
 
 export const accessCodeEnabled = () => Boolean(process.env.ACCESS_CODE?.trim() && process.env.SESSION_SECRET?.trim());
 

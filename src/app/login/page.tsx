@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { accessCodeEnabled } from "@/lib/access-code";
+import { accessCodeEnabled, openAccess } from "@/lib/access-code";
 
 export const dynamic = "force-dynamic";
 
 export default async function Login({ searchParams }: PageProps<"/login">) {
+  if (openAccess()) redirect("/");
   if (!accessCodeEnabled()) {
     if (process.env.NODE_ENV !== "production") redirect("/");
     return <p className="py-20 text-center text-[14px] text-ink-2">Sign-in is not configured. Set ACCESS_CODE and SESSION_SECRET.</p>;
