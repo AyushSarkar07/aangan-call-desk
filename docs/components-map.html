@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Aangan Components Map</title>
+<style>
+  @page { size: 1600px 900px; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1600px; height: 900px; background: #fbfbfd; font-family: "Inter", "Helvetica Neue", Arial, sans-serif; color: #1f2147; }
+  .title { position: absolute; top: 18px; width: 1600px; text-align: center; font-size: 34px; font-weight: 700; color: #1d2563; letter-spacing: -0.3px; }
+  .grid { position: absolute; left: 18px; top: 84px; width: 1569px; height: 774px; border: 1px solid #e3e3ee; border-radius: 10px; background: #fff; overflow: hidden; }
+  .head { position: absolute; top: 0; height: 77px; background: #3f3f86; color: #fff; font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; border-right: 1px solid #5a5aa0; }
+  .actor { position: absolute; left: 0; width: 213px; background: #6650a4; color: #fff; display: flex; flex-direction: column; justify-content: center; padding-left: 18px; border-bottom: 1px solid #8a76c2; }
+  .actor b { font-size: 19px; font-weight: 650; line-height: 1.15; }
+  .actor span { font-size: 14px; opacity: 0.85; margin-top: 3px; }
+  .vline { position: absolute; top: 77px; bottom: 0; border-left: 1px dashed #dedee8; }
+  .hline { position: absolute; left: 213px; right: 0; border-top: 1px solid #f1f1f6; }
+  .box { position: absolute; border-radius: 9px; border: 2px solid; padding: 8px 11px; font-size: 14px; line-height: 1.32; text-align: center; display: flex; flex-direction: column; justify-content: center; background: #fff; }
+  .box small { display: block; font-size: 12px; color: #55587a; margin-top: 3px; }
+  .trigger, .input { border-color: #4a6fd1; background: #f5f8ff; }
+  .context { border-color: #3aa76a; background: #f1fbf5; }
+  .processing { border-color: #e1bf3c; background: #fdf3b8; }
+  .ai { border-color: #c9505a; background: #fff5f5; }
+  .output { border-color: #dfae45; background: #fdf1cc; }
+  .decline { border-color: #b9bccb; background: #f4f5f8; color: #4b4e68; }
+  svg { position: absolute; left: 0; top: 0; }
+  .lbl { font-size: 12px; fill: #6a6d8c; font-style: italic; }
+  .foot { position: absolute; bottom: 12px; width: 1600px; text-align: center; font-size: 13px; color: #6a6d8c; }
+</style>
+</head>
+<body>
+<div class="title">Case 3 · Nikhil / Aangan Studio — Components Map</div>
+
+<div class="grid">
+  <!-- column headers: Actor | Trigger | Input | Context | Processing | AI | Output -->
+  <div class="head" style="left:0;width:213px">Actor</div>
+  <div class="head" style="left:213px;width:233px">Trigger</div>
+  <div class="head" style="left:446px;width:230px">Input</div>
+  <div class="head" style="left:676px;width:220px">Context</div>
+  <div class="head" style="left:896px;width:241px">Processing</div>
+  <div class="head" style="left:1137px;width:231px">AI</div>
+  <div class="head" style="left:1368px;width:201px;border-right:0">Output</div>
+
+  <div class="vline" style="left:446px"></div>
+  <div class="vline" style="left:676px"></div>
+  <div class="vline" style="left:896px"></div>
+  <div class="vline" style="left:1137px"></div>
+  <div class="vline" style="left:1368px"></div>
+
+  <!-- swimlanes: 7 rows of ~99px starting at 77 -->
+  <div class="actor" style="top:77px;height:99px"><b>Caller</b><span>(prospect)</span></div>
+  <div class="actor" style="top:176px;height:99px"><b>Vaani</b><span>(voice agent, 24/7)</span></div>
+  <div class="actor" style="top:275px;height:100px"><b>Studio knowledge</b><span>(Context)</span></div>
+  <div class="actor" style="top:375px;height:99px"><b>Gemini Flash</b><span>(fact extraction)</span></div>
+  <div class="actor" style="top:474px;height:100px"><b>Rules engine</b><span>(Nikhil's rubric in code)</span></div>
+  <div class="actor" style="top:574px;height:100px"><b>Telegram</b><span>(designer review gate)</span></div>
+  <div class="actor" style="top:674px;height:100px;border-bottom:0"><b>Cal.com · HubSpot</b><span>(+ Nikhil's dashboard)</span></div>
+  <div class="hline" style="top:176px"></div><div class="hline" style="top:275px"></div><div class="hline" style="top:375px"></div>
+  <div class="hline" style="top:474px"></div><div class="hline" style="top:574px"></div><div class="hline" style="top:674px"></div>
+</div>
+
+<!-- boxes (page coordinates) -->
+<div class="box trigger" style="left:247px;top:174px;width:200px;height:74px">Calls the studio number<small>any hour — 1 in 3 calls is outside 10am–7pm</small></div>
+
+<div class="box input" style="left:478px;top:262px;width:206px;height:102px">Answers in seconds · asks rooms, area, deadline, owner · deflects price<small>→ transcript + caller no. via webhook</small></div>
+
+<div class="box context" style="left:707px;top:369px;width:198px;height:84px">qualified.md rubric · services.md area list · pricing.md (internal only)<small>+ caller history in Neon</small></div>
+
+<div class="box ai" style="left:1166px;top:466px;width:212px;height:86px">Reads transcript → strict JSON facts + caller quotes<small>facts only — never the verdict</small></div>
+
+<div class="box processing" style="left:925px;top:560px;width:222px;height:106px">5 checks: scope · area · timeline · budget · decision-maker<small>→ Qualified / Call back / Not a fit / Escalate · price-quote scan</small></div>
+
+<div class="box decline" style="left:1397px;top:580px;width:182px;height:52px">Not a fit → polite decline line, not forwarded</div>
+
+<div class="box output" style="left:1397px;top:665px;width:182px;height:88px">Handoff note, nothing re-asked<small>✋ “I'll take this” · 🚨 senior in 15 min</small></div>
+
+<div class="box output" style="left:1397px;top:772px;width:182px;height:76px">Books consult · creates deal<small>cost/call logged → dashboard</small></div>
+
+<!-- arrows -->
+<svg width="1600" height="900" viewBox="0 0 1600 900" aria-hidden="true">
+  <defs>
+    <marker id="h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4b4e6e"/>
+    </marker>
+  </defs>
+  <g fill="none" stroke="#4b4e6e" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#h)">
+    <!-- caller → Vaani -->
+    <path d="M347 248 V312 H474"/>
+    <!-- Vaani → Gemini -->
+    <path d="M684 300 H1272 V462"/>
+    <!-- knowledge → Vaani prompt -->
+    <path d="M806 369 V338 H688"/>
+    <!-- knowledge → rules -->
+    <path d="M905 411 H1036 V556"/>
+    <!-- Gemini → rules -->
+    <path d="M1272 552 V574 H1151"/>
+    <!-- rules → decline -->
+    <path d="M1147 606 H1393"/>
+    <!-- rules → Telegram handoff -->
+    <path d="M1147 640 H1300 V709 H1393"/>
+    <!-- rules → Cal.com / HubSpot -->
+    <path d="M1036 666 V810 H1393"/>
+  </g>
+  <text class="lbl" x="1000" y="292">transcript</text>
+  <text class="lbl" x="700" y="332">agent prompt</text>
+  <text class="lbl" x="940" y="404">rules + area list</text>
+  <text class="lbl" x="1178" y="568">facts</text><text class="lbl" x="1270" y="600">Not a fit</text>
+  <text class="lbl" x="1160" y="700">Qualified · Call back · Escalate</text>
+  <text class="lbl" x="1100" y="804">Qualified only</text>
+</svg>
+
+<div class="foot">Phone calls only · Vaani → webhook → Gemini (facts) → rules in code (decision) → Telegram · Cal.com · HubSpot · Neon dashboard</div>
+</body>
+</html>
